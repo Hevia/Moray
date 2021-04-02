@@ -1,5 +1,5 @@
 [package]
-name = "moray-lang"
+name = "moray"
 version = "0.1.0"
 authors = ["Anthony H <anthony@hevia.dev>"]
 edition = "2018"

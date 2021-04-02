@@ -8,8 +8,14 @@ struct Variable {
 
 
 fn main() -> Result<(), Error> {
-    let path = "D:/Desktop/code/moray/moray-lang/tests/assign.my";
+    
+}
 
+fn create_env() -> Result<(), Error> {
+
+}
+
+fn parse_file(path: &str) -> Result<(), Error> {
     let input = File::open(path)?;
     let buffered = BufReader::new(input);
 
