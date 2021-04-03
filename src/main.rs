@@ -1,7 +1,36 @@
 use std::io::{BufRead, BufReader, Error, ErrorKind};
 use std::process::{ChildStdout, Command, Stdio};
+use clap::{Arg, App, SubCommand};
 
-fn main() {}
+fn main() {
+     let matches = App::new("moray")
+                          .version("0.1")
+                          .author("Anthony Hevia. <anthony@hevia.dev>")
+                          .about("Cargo-style Python tooling")
+                          .arg(Arg::with_name("config")
+                               .short("c")
+                               .long("config")
+                               .value_name("FILE")
+                               .help("Sets a custom config file")
+                               .takes_value(true))
+                          .subcommand(SubCommand::with_name("new")
+                                      .about("creates a new project & virtual enviroment")
+                                      .arg(Arg::with_name("debug")
+                                          .short("d")
+                                          .help("print debug information verbosely")))
+                          .subcommand(SubCommand::with_name("install")
+                                      .about("Installs dependencies")
+                                      .arg(Arg::with_name("debug")
+                                          .short("d")
+                                          .help("print debug information verbosely")))
+                          .subcommand(SubCommand::with_name("run")
+                                      .about("runs your python program")
+                                      .arg(Arg::with_name("debug")
+                                          .short("d")
+                                          .help("print debug information verbosely")))
+                          .get_matches();
+
+}
 
 fn display_output(stdout: ChildStdout) -> Result<(), Error> {
     let reader = BufReader::new(stdout);
