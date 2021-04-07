@@ -16,9 +16,7 @@ fn main() {
         .subcommand(SubCommand::with_name("run").about("runs your python program"))
         .get_matches();
 
-    // You can get the independent subcommand matches (which function exactly like App matches)
     if let Some(ref matches) = matches.subcommand_matches("new") {
-        // Safe to use unwrap() because of the required() option
         let proj_name = matches.value_of("name").unwrap();
 
         // TODO: better error handling
