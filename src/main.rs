@@ -1,29 +1,32 @@
+use clap::{App, Arg, SubCommand};
 use std::io::{BufRead, BufReader, Error, ErrorKind};
 use std::process::{ChildStdout, Command, Stdio};
-use clap::{Arg, App, SubCommand};
 
 fn main() {
-     let matches = App::new("moray")
-                          .version("0.1")
-                          .author("Anthony Hevia. <anthony@hevia.dev>")
-                          .about("Cargo-style Python tooling")
-                          .subcommand(SubCommand::with_name("new")
-                                      .about("creates a new project & virtual enviroment")
-                                      .arg(Arg::with_name("debug")
-                                          .short("d")
-                                          .help("print debug information verbosely")))
-                          .subcommand(SubCommand::with_name("install")
-                                      .about("Installs dependencies")
-                                      .arg(Arg::with_name("debug")
-                                          .short("d")
-                                          .help("print debug information verbosely")))
-                          .subcommand(SubCommand::with_name("run")
-                                      .about("runs your python program")
-                                      .arg(Arg::with_name("debug")
-                                          .short("d")
-                                          .help("print debug information verbosely")))
-                          .get_matches();
+    let matches = App::new("moray")
+        .version("0.1")
+        .author("Anthony Hevia. <anthony@hevia.dev>")
+        .about("Rust's Cargo-style tooling for Python")
+        .subcommand(
+            SubCommand::with_name("new")
+                .about("creates a new project & nested virtual enviroment")
+                .arg(Arg::with_name("project_name").index(1).required(true)),
+        )
+        .subcommand(SubCommand::with_name("install").about("Installs dependencies"))
+        .subcommand(SubCommand::with_name("run").about("runs your python program"))
+        .get_matches();
 
+    // You can get the independent subcommand matches (which function exactly like App matches)
+    if let Some(ref matches) = matches.subcommand_matches("new") {
+        // Safe to use unwrap() because of the required() option
+        let proj_name = matches.value_of("name").unwrap();
+
+        // TODO: better error handling
+        let op_result = create_folder(proj_name).unwrap();
+        let _display_result = display_output(op_result);
+        let op_result = create_venv(proj_name).unwrap();
+        let _display_result = display_output(op_result);
+    }
 }
 
 fn display_output(stdout: ChildStdout) -> Result<(), Error> {
@@ -46,9 +49,12 @@ fn create_folder(folder_name: &str) -> Result<ChildStdout, Error> {
     Ok(stdout)
 }
 
-fn create_venv(venv_name: &str) -> Result<ChildStdout, Error> {
+fn create_venv(folder_name: &str) -> Result<ChildStdout, Error> {
     let stdout = Command::new("cmd")
-        .args(&["/C", format!("python -m venv ./{}", venv_name).as_str()])
+        .args(&[
+            "/C",
+            format!("python -m venv ./{}/venv", folder_name).as_str(),
+        ])
         .stdout(Stdio::piped())
         .spawn()?
         .stdout
@@ -57,11 +63,15 @@ fn create_venv(venv_name: &str) -> Result<ChildStdout, Error> {
     Ok(stdout)
 }
 
-fn activate_venv(venv_name: &str, further_commands: &str) -> Result<ChildStdout, Error> {
+fn activate_venv(folder_name: &str, further_commands: &str) -> Result<ChildStdout, Error> {
     let stdout = Command::new("cmd")
         .args(&[
             "/C",
-            format!(".\\{}\\Scripts\\activate & {}", venv_name, further_commands).as_str(),
+            format!(
+                ".\\{}\\venv\\Scripts\\activate & {}",
+                folder_name, further_commands
+            )
+            .as_str(),
         ])
         .stdout(Stdio::piped())
         .spawn()?
